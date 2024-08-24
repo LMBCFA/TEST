@@ -1,0 +1,68 @@
+import fitz  # PyMuPDF
+import pandas as pd
+import dash
+from dash import dcc, html
+import plotly.express as px
+
+# Function to extract data from PDF
+def extract_data_from_pdf(pdf_path):
+    # Open the PDF
+    doc = fitz.open(pdf_path)
+    
+    # Placeholder for storing text
+    data = []
+    
+    # Iterate over PDF pages
+    for page_num in range(len(doc)):
+        page = doc.load_page(page_num)
+        text = page.get_text("text")
+        data.append(text)
+    
+    # Example: Extract specific financial data
+    # You'll need to write logic to find and structure the relevant data
+    # For now, just returning the raw text
+    return "\n".join(data)
+
+# Parse extracted data into a structured format (pandas DataFrame)
+def parse_data(text_data):
+    # Example: Splitting lines and finding patterns (dummy data used here)
+    # Adjust this section according to the actual content of the PDF
+    lines = text_data.split("\n")
+    
+    # Example placeholder DataFrame
+    df = pd.DataFrame({
+        'Metric': ['Total Revenue', 'Non-GAAP Operating Income', 'GAAP Operating Income'],
+        'Value': [14.4, 5.5, 3.1],
+        'Year': [2023, 2023, 2023]
+    })
+    
+    return df
+
+# Create a Dash application
+app = dash.Dash(__name__)
+
+# Load and process the PDF data
+pdf_path = '/mnt/data/INTU.pdf'
+raw_text = extract_data_from_pdf(pdf_path)
+df = parse_data(raw_text)
+
+# Create a Plotly figure
+fig = px.bar(df, x='Metric', y='Value', color='Metric', title='Financial Metrics for 2023')
+
+# Define the layout of the Dash app
+app.layout = html.Div(children=[
+    html.H1(children='Intuit 2024 Proxy Dashboard'),
+    
+    html.Div(children='''
+        Key financial metrics and governance data extracted from the 2024 Proxy Statement.
+    '''),
+    
+    dcc.Graph(
+        id='example-graph',
+        figure=fig
+    )
+])
+
+# Run the Dash app
+if __name__ == '__main__':
+    app.run_server(debug=True)
